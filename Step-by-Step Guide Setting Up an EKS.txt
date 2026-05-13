@@ -1,0 +1,94 @@
+Step-by-Step Guide: Setting Up an EKS Cluster Using eksctl
+
+⸻
+
+🧰 Step 1: Set Up Your AWS Account
+	1.	Login to AWS Console: https://aws.amazon.com/
+	2.	Create IAM User (if not using root):
+	•	Go to IAM > Users > Add user
+	•	Enable Programmatic Access
+	•	Attach AdministratorAccess policy (for now)
+	•	Save Access Key ID and Secret Access Key
+
+⸻
+
+🧑‍💻 Step 2: Install Required Tools on Your Laptop
+
+✅ a. Install AWS CLI
+	•	Download: https://docs.aws.amazon.com/cli/latest/userguide/install-cliv2.html 
+
+VERIFY
+ aws --version
+
+✅ b. Install kubectl (Kubernetes CLI)
+	•	Download: https://kubernetes.io/docs/tasks/tools/
+VERIFY
+kubectl version --client
+
+✅ c. Install eksctl
+	•	Download: https://eksctl.io/installation/ (Choose your OS)
+VERIFY
+eksctl version
+
+⚙ Step 3: Configure AWS CLI
+
+VERIFY
+ aws configure
+
+🔑 Step 4: (Optional) Create a Key Pair for SSH Access
+
+If you want to SSH into the EC2 worker nodes:
+	•	Go to EC2 > Key Pairs > Create Key Pair
+	•	Name: eks-key
+	•	Download the .pem file and save it securely
+	•	Use the key name in the next step+
+
+🚀 Step 5: Create Your EKS Cluster
+
+Run this in terminal:
+
+eksctl create cluster \
+  --name demo-cluster \
+  --region ap-northeast-1 \
+  --nodegroup-name demo-nodes \
+  --node-type t3.medium \
+  --nodes 2 \
+  --nodes-min 1 \
+  --nodes-max 3 \
+  --with-oidc \
+  --managed \
+  --ssh-access \
+  --ssh-public-key es-key.pem
+
+What this does:
+	•	Creates a VPC
+	•	Launches 2 worker nodes
+	•	Sets up IAM roles
+	•	Installs and connects your local kubectl to the cluster
+
+🕒 Takes ~15–20 minutes
+
+Step 6: Verify the Cluster
+
+After creation completes:
+
+kubectl get nodes
+kubectl get pods --all-namespaces
+
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+  labels:
+    app: nginx
+spec:
+  containers:
+    - name: nginx-container1
+      image: nginx:latest
+      ports:
+        - containerPort: 80
+    - name: nginx-container2
+      image: nginx:latest
+      ports:
+        - containerPort: 8080
